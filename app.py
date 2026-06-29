@@ -52,6 +52,11 @@ from tools import (
     split_extract,
     groupby_agg,
     pivot_table,
+    fuzzy_match,
+    filter_builder,
+    unpivot,
+    date_intelligence,
+    clean_blank,
 )
 
 # ═══════════════════════════════════════════════════════════
@@ -101,6 +106,26 @@ TOOLS = {
     "🧮 Pivot Table":        {
         "module":   pivot_table,
         "subtitle": "Tạo bảng pivot nhanh từ dữ liệu",
+    },
+    "🔎 Fuzzy Match":        {
+        "module":   fuzzy_match,
+        "subtitle": "Ghép dữ liệu khi giá trị gần giống nhau (không khớp 100%)",
+    },
+    "🔽 Filter Builder":     {
+        "module":   filter_builder,
+        "subtitle": "Lọc dòng theo nhiều điều kiện AND/OR",
+    },
+    "📐 Unpivot":            {
+        "module":   unpivot,
+        "subtitle": "Chuyển bảng wide → long (melt) cho BI",
+    },
+    "📅 Date Intelligence":  {
+        "module":   date_intelligence,
+        "subtitle": "Thêm year/quarter/month/week/weekday từ cột ngày",
+    },
+    "🧽 Dọn Trống":          {
+        "module":   clean_blank,
+        "subtitle": "Xoá dòng/cột trống, trim khoảng trắng",
     },
 }
 

@@ -11,12 +11,12 @@ def sidebar_logo() -> str:
     <div style='text-align:center; padding:16px 0 24px'>
         <div style='font-size:2.5rem'>📊</div>
         <div style='color:#7eb8f7; font-weight:800; font-size:1.1rem'>Excel Analyst</div>
-        <div style='color:#4a5568; font-size:.75rem'>v2.0 — Data Tools Suite</div>
+        <div style='color:#4a5568; font-size:.75rem'>Data Tools Suite</div>
     </div>"""
 
 
 def sidebar_footer() -> str:
-    return "<div style='color:#4a5568; font-size:.75rem; text-align:center'>Built with ❤️ for Data Analysts</div>"
+    return "<div style='color:#4a5568; font-size:.75rem; text-align:center'>Built with ❤️ for Data Analysts DiepNv</div>"
 
 
 def sidebar_divider() -> str:
