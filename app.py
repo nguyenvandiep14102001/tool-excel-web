@@ -47,6 +47,11 @@ from tools import (
     merge_join,
     dedup,
     normalize_data,
+    data_profile,
+    validate_rules,
+    split_extract,
+    groupby_agg,
+    pivot_table,
 )
 
 # ═══════════════════════════════════════════════════════════
@@ -76,6 +81,26 @@ TOOLS = {
     "🔄 Chuẩn Hoá Dữ Liệu": {
         "module":   normalize_data,
         "subtitle": "Trim, upper/lower, định dạng ngày, số, fill NA…",
+    },
+    "📊 Data Profile":       {
+        "module":   data_profile,
+        "subtitle": "Thống kê null, distinct, kiểu dữ liệu, min/max từng cột",
+    },
+    "✅ Validate Rules":     {
+        "module":   validate_rules,
+        "subtitle": "Kiểm tra rule nghiệp vụ — xuất dòng lỗi",
+    },
+    "✂️ Tách / Trích Cột":  {
+        "module":   split_extract,
+        "subtitle": "Tách cột theo delimiter hoặc trích bằng regex",
+    },
+    "📈 GroupBy":            {
+        "module":   groupby_agg,
+        "subtitle": "Nhóm dữ liệu và tổng hợp sum/count/mean/min/max",
+    },
+    "🧮 Pivot Table":        {
+        "module":   pivot_table,
+        "subtitle": "Tạo bảng pivot nhanh từ dữ liệu",
     },
 }
 
