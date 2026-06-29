@@ -1,5 +1,7 @@
 [server]
 headless = false
+# Windows: phát hiện đổi file Python đáng tin cậy hơn (tránh giữ text/UI cũ)
+fileWatcherType = "poll"
 
 [browser]
 gatherUsageStats = false

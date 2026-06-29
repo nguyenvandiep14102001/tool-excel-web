@@ -23,6 +23,10 @@ Cấu trúc project:
 
 import streamlit as st
 
+# ── Branding sidebar (sửa text tại đây — app.py được Streamlit reload ngay) ──
+APP_NAME = "Excel Analyst"
+APP_TAGLINE = "Data Tools Suite"
+
 # ── Page config (phải gọi TRƯỚC mọi st.* khác) ───────────────────────────────
 st.set_page_config(
     page_title="Excel Analyst Tool",
@@ -32,6 +36,10 @@ st.set_page_config(
 )
 
 # ── Internal imports ──────────────────────────────────────────────────────────
+import importlib
+import assets.templates as _templates_module
+importlib.reload(_templates_module)
+
 from modules.ui_components import load_css
 from modules.file_loader   import render_file_loader
 from assets.templates      import (
@@ -138,7 +146,7 @@ load_css()
 # SIDEBAR
 # ═══════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown(sidebar_logo(), unsafe_allow_html=True)
+    st.markdown(sidebar_logo(APP_NAME, APP_TAGLINE), unsafe_allow_html=True)
 
     tool_name = st.radio(
         "🔧 Chọn công cụ",

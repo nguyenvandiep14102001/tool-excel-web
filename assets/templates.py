@@ -6,17 +6,17 @@ Gọi từ bất kỳ module nào, tránh inline HTML rải rác.
 """
 
 
-def sidebar_logo() -> str:
-    return """
+def sidebar_logo(name: str = "Excel Analyst", tagline: str = "Data Tools Suite") -> str:
+    return f"""
     <div style='text-align:center; padding:16px 0 24px'>
         <div style='font-size:2.5rem'>📊</div>
-        <div style='color:#7eb8f7; font-weight:800; font-size:1.1rem'>Excel Analyst</div>
-        <div style='color:#4a5568; font-size:.75rem'>Data Tools Suite</div>
+        <div style='color:#7eb8f7; font-weight:800; font-size:1.1rem'>{name}</div>
+        <div style='color:#4a5568; font-size:.75rem'>{tagline}</div>
     </div>"""
 
 
 def sidebar_footer() -> str:
-    return "<div style='color:#4a5568; font-size:.75rem; text-align:center'>Built with ❤️ for Data Analysts DiepNv</div>"
+    return "<div style='color:#4a5568; font-size:.75rem; text-align:center'>Built with ❤️ for Data Analysts</div>"
 
 
 def sidebar_divider() -> str:
