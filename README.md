@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📊 Excel Analyst Tool v2
 
 Công cụ phân tích Excel dành cho Data Analyst — kiến trúc module hoá.
@@ -70,3 +71,34 @@ Xong! Không cần sửa gì khác.
 | openpyxl   | Đọc/ghi Excel có màu            |
 | xlsxwriter | Export Excel (backup)           |
 | numpy      | Tính toán                       |
+=======
+# README #
+
+This README would normally document whatever steps are necessary to get your application up and running.
+
+### What is this repository for? ###
+
+* Quick summary
+* Version
+* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+
+### How do I get set up? ###
+
+* Summary of set up
+* Configuration
+* Dependencies
+* Database configuration
+* How to run tests
+* Deployment instructions
+
+### Contribution guidelines ###
+
+* Writing tests
+* Code review
+* Other guidelines
+
+### Who do I talk to? ###
+
+* Repo owner or admin
+* Other community or team contact
+>>>>>>> a2c9ab89b8a4205fdcff647d21e62c41b21f68ef
