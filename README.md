@@ -37,6 +37,96 @@ Trong terminal: `Ctrl + C`.
 
 ---
 
+## 👥 Cho người dùng bình thường (chỉ cần mở app)
+
+### So sánh các cách phát hành
+
+| Cách | Gửi gì cho user? | User làm gì? | Cần source trên máy user? |
+|------|------------------|--------------|---------------------------|
+| **⭐ Server team (khuyến nghị)** | Chỉ **1 link** hoặc file `.url` | Mở Chrome/Edge, dán link | **Không** |
+| Portable zip + venv | 1 file zip (~300MB) | Giải nén → `Mo Excel Analyst.bat` | Có folder app (user không sửa code) |
+| Portable zip không venv | Zip nhỏ hơn | `Cai dat lan dau.bat` 1 lần + `Mo Excel Analyst.bat` | Có folder + cần Python |
+| File .exe (PyInstaller) | 1 file Setup.exe | Cài / chạy exe | Ẩn source, bundle ~200MB+ |
+
+**Trả lời câu hỏi thường gặp:** Với `.bat` trên máy từng người — **đúng**, bạn phải gửi folder app (hoặc zip). User **không cần đọc/sửa code**, chỉ double-click `.bat`.
+
+**Muốn user không nhận gì cả ngoài link** → dùng **Cách Server** bên dưới.
+
+---
+
+### ⭐ Cách 1 — Một máy chạy server, team chỉ mở trình duyệt (tốt nhất)
+
+**Trên máy chủ** (1 máy mạnh / máy IT, luôn bật khi team dùng):
+
+1. `Cai dat lan dau.bat` (một lần)
+2. Double-click **`Chay Server cho Team.bat`**
+3. Copy link hiện ra, ví dụ `http://192.168.1.50:8501`
+4. Gửi link cho đồng nghiệp **hoặc** chạy:
+   ```powershell
+   powershell -File scripts\tao_link_trinh_duyet.ps1
+   ```
+   → tạo `Excel Analyst.url` trên Desktop, gửi file `.url` cho user
+
+**User:** mở link — **không cần** folder source, Python, hay file `.bat`.
+
+> Máy chủ và user phải cùng mạng LAN (hoặc VPN). Firewall Windows có thể hỏi — chọn **Allow**.
+
+---
+
+### Cách 2 — Gửi gói cài đặt (mỗi người 1 máy)
+
+**Bạn (dev/IT) đóng gói một lần:**
+
+```text
+scripts\dong_goi_phat_hanh.bat
+```
+
+→ Tạo folder `release\Excel Analyst Tool\` — zip và gửi.
+
+- Chọn **copy venv** khi được hỏi → user **không cần cài Python**
+- Không copy venv → user chạy `Cai dat lan dau.bat` một lần
+
+Kèm file **`HUONG DAN NGUOI DUNG.md`** trong gói.
+
+---
+
+### Cách 3 — Double-click trên máy đã có project (dev / nội bộ)
+
+Người không biết lập trình **không cần gõ lệnh** — chỉ double-click file `.bat` trên Windows.
+
+#### Lần đầu (IT / người cài đặt — 1 lần duy nhất)
+
+1. Cài **Python 3.10+** từ [python.org](https://www.python.org/downloads/) — tick **Add Python to PATH**
+2. Double-click **`Cai dat lan dau.bat`** trong thư mục `excel_tool`
+3. Đợi cài xong → trên Desktop sẽ có shortcut **Excel Analyst** (nếu tạo được)
+
+#### Mỗi lần dùng (người dùng cuối)
+
+Double-click **`Mo Excel Analyst.bat`** (hoặc shortcut trên Desktop)
+
+→ Trình duyệt tự mở app. **Không đóng cửa sổ đen** — đó là server đang chạy.
+
+| File | Ai dùng | Khi nào |
+|------|---------|---------|
+| `Chay Server cho Team.bat` | IT — **1 máy** cho cả team | User chỉ cần link trình duyệt |
+| `Cai dat lan dau.bat` | IT / admin | **1 lần** trên mỗi máy (cách 2, 3) |
+| `Mo Excel Analyst.bat` | Mọi người | **Mỗi lần** mở app trên máy local |
+| `scripts\dong_goi_phat_hanh.bat` | Dev / IT | Đóng gói zip phát hành |
+| `scripts\tao_link_trinh_duyet.ps1` | IT | Tạo file `.url` cho user |
+
+### Cách 4 — File .exe (phát hành rộng, chưa có sẵn)
+
+Đóng gói PyInstaller (~200–400 MB), user cài như phần mềm thường — không thấy folder `.py`. Cần thêm thời gian build & test.
+
+### Lưu ý khi hỗ trợ user
+
+- Cửa sổ đen = app đang chạy; đóng cửa sổ = tắt app
+- App local: `http://localhost:8501` — không cần Internet
+- App server: dùng link LAN IT cung cấp
+- Antivirus đôi khi chặn `.bat` lần đầu → chọn **Allow**
+
+---
+
 ## 🖥️ Giao diện chung
 
 ### Sidebar (thanh bên trái)
