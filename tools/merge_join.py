@@ -9,6 +9,7 @@ import streamlit as st
 import pandas as pd
 
 from modules.excel_utils import (
+    normalize_key, digit_key_width,
     style_header, auto_col_width, freeze_header,
     save_workbook_to_bytes,
 )
@@ -69,13 +70,26 @@ def render(df1: pd.DataFrame | None, df2: pd.DataFrame | None,
 # ── Core logic ────────────────────────────────────────────────────────────────
 
 def _run(df1, df2, key1, key2, join_type, suffix1, suffix2, name1, name2):
+    left, right = df1.copy(), df2.copy()
+    left_on, right_on = [], []
+    drop_cols = []
+    for i, (c1, c2) in enumerate(zip(key1, key2)):
+        width = digit_key_width(df1[c1], df2[c2])
+        lc, rc = f"__jk_l{i}", f"__jk_r{i}"
+        left[lc] = df1[c1].map(lambda v, w=width: normalize_key(v, True, True, w))
+        right[rc] = df2[c2].map(lambda v, w=width: normalize_key(v, True, True, w))
+        left_on.append(lc)
+        right_on.append(rc)
+        drop_cols.extend([lc, rc])
+
     try:
         merged = pd.merge(
-            df1, df2,
-            left_on=key1, right_on=key2,
+            left, right,
+            left_on=left_on, right_on=right_on,
             how=JOIN_MAP[join_type],
             suffixes=(suffix1, suffix2),
         )
+        merged = merged.drop(columns=[c for c in drop_cols if c in merged.columns])
     except Exception as e:
         st.error(f"❌ Lỗi khi JOIN: {e}")
         return

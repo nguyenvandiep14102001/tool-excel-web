@@ -10,7 +10,7 @@ import pandas as pd
 import openpyxl
 
 from modules.excel_utils import (
-    normalize,
+    normalize_key, digit_key_width,
     GREEN_FILL, RED_FILL,
     style_header, auto_col_width, freeze_header,
     save_workbook_to_bytes,
@@ -70,9 +70,10 @@ def render(df1: pd.DataFrame | None, df2: pd.DataFrame | None,
 
 def _run(df1, df2, key1, key2, return_cols, dest_names, handle_dup, strip, icase):
     # Build lookup dict: norm_key → list of {col: val}
+    key_width = digit_key_width(df1[key1], df2[key2])
     lookup: dict[str, list[dict]] = {}
     for _, row in df2.iterrows():
-        k = normalize(row[key2], strip, icase)
+        k = normalize_key(row[key2], strip, icase, key_width)
         vals = {rc: row[rc] for rc in return_cols}
         lookup.setdefault(k, []).append(vals)
 
@@ -82,7 +83,7 @@ def _run(df1, df2, key1, key2, return_cols, dest_names, handle_dup, strip, icase
         dest = dest_names[rc]
         resolved = []
         for v in df1[key1]:
-            k = normalize(v, strip, icase)
+            k = normalize_key(v, strip, icase, key_width)
             if k in lookup:
                 entries = lookup[k]
                 if handle_dup == "Đầu tiên":

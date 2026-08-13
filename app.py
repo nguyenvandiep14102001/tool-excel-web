@@ -36,10 +36,6 @@ st.set_page_config(
 )
 
 # ── Internal imports ──────────────────────────────────────────────────────────
-import importlib
-import assets.templates as _templates_module
-importlib.reload(_templates_module)
-
 from modules.ui_components import load_css
 from modules.file_loader   import render_file_loader
 from assets.templates      import (

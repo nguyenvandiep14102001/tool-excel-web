@@ -12,7 +12,7 @@ import pandas as pd
 import streamlit as st
 
 from modules.excel_utils import (
-    normalize,
+    normalize_key, digit_key_width,
     GREEN_FILL,
     RED_FILL,
     auto_col_width,
@@ -66,8 +66,11 @@ def render(df1: pd.DataFrame | None, df2: pd.DataFrame | None,
 
 
 def _run(df1, df2, key1, key2, return_cols, threshold, strip, icase):
+    key_width = digit_key_width(df1[key1], df2[key2])
     lookup = df2.copy()
-    lookup["_norm"] = lookup[key2].apply(lambda x: normalize(x, strip, icase))
+    lookup["_norm"] = lookup[key2].apply(
+        lambda x: normalize_key(x, strip, icase, key_width)
+    )
 
     choices = lookup["_norm"].tolist()
     choice_rows = lookup.index.tolist()
@@ -77,7 +80,7 @@ def _run(df1, df2, key1, key2, return_cols, threshold, strip, icase):
     matched = 0
 
     for _, row in df1.iterrows():
-        q = normalize(row[key1], strip, icase)
+        q = normalize_key(row[key1], strip, icase, key_width)
         best_score = 0.0
         best_i = None
         for i, c in enumerate(choices):
