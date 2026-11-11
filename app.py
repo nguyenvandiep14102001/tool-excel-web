@@ -69,11 +69,11 @@ from tools import (
 TOOLS = {
     "🔍 So Sánh Cột":        {
         "module":   compare_columns,
-        "subtitle": "So sánh từng cặp cột theo dòng tương ứng — tô màu kết quả",
+        "subtitle": "So sánh cặp cột theo KEY — thêm sheet dòng chỉ có ở File2",
     },
     "📏 So Sánh Dòng":       {
         "module":   compare_rows,
-        "subtitle": "Tra cứu dòng theo KEY, so sánh từng ô — khác ở đâu tô đỏ",
+        "subtitle": "So sánh toàn dòng — ghi chú cột khác hoặc không có toàn bộ dữ liệu",
     },
     "🔗 Mapping / VLOOKUP":  {
         "module":   mapping,

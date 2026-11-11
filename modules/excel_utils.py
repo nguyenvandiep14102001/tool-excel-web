@@ -7,6 +7,7 @@ Các hàm tiện ích Excel/Pandas dùng chung cho tất cả tool.
 from io import BytesIO
 import math
 import re
+from decimal import Decimal, InvalidOperation
 
 import pandas as pd
 import openpyxl
@@ -16,6 +17,10 @@ from openpyxl.utils import get_column_letter
 _MISSING = {"", "nan", "none", "nat", "<na>", "natype"}
 _INT_DOT_ZERO = re.compile(r"^([+-]?\d+)\.0+$")
 _SCI_NUM = re.compile(r"^[+-]?\d+(?:\.\d+)?[eE][+-]?\d+$")
+# Số thập phân (có dấu . hoặc ,) — dùng để chuẩn hoá 6.20 ≈ 6.2 khi so sánh
+_DECIMAL_LIKE = re.compile(
+    r"^[+-]?(?:\d+[.,]\d*|\d*[.,]\d+)(?:[eE][+-]?\d+)?$"
+)
 _COL_CCCD = re.compile(
     r"cmnd|cccd|cancuoc|căn\s*cước|identity|id[\s_]*card|s[oố0]\s*cmnd|s[oố0]\s*cccd",
     re.I,
@@ -25,6 +30,28 @@ _COL_PHONE = re.compile(
     re.I,
 )
 _FMT_ZERO_PAD = re.compile(r"^0+$")
+
+
+def _canonical_decimal_str(s: str) -> str | None:
+    """
+    Chuẩn hoá chuỗi số thập phân để so sánh: '6.20' / '6,20' / '6.2' → '6.2'.
+    Không đụng chuỗi số nguyên (CCCD/SĐT giữ nguyên số 0 đầu).
+    """
+    text = (s or "").strip()
+    if not text or not _DECIMAL_LIKE.fullmatch(text):
+        return None
+    try:
+        d = Decimal(text.replace(",", "."))
+    except (InvalidOperation, ValueError):
+        return None
+    if not d.is_finite():
+        return None
+    fixed = format(d, "f")
+    if "." in fixed:
+        fixed = fixed.rstrip("0").rstrip(".")
+    if fixed in {"", "-", "+"}:
+        return "0"
+    return fixed
 
 
 def cell_to_str(val) -> str:
@@ -190,13 +217,19 @@ STYLE_SHEET2 = "background-color:#dbeafe;color:#1e40af"
 
 # ── Data normalization ────────────────────────────────────────────────────────
 def normalize(val, strip_ws: bool = True, ignore_case: bool = True) -> str:
-    """Chuẩn hoá giá trị để so sánh — giữ số 0 đầu của CCCD/SĐT dạng text."""
+    """
+    Chuẩn hoá giá trị để so sánh — giữ số 0 đầu của CCCD/SĐT dạng text.
+    Số thập phân bỏ 0 thừa: 6.20 / 6,20 / 6.2 → cùng một giá trị.
+    """
     s = cell_to_str(val)
     if not strip_ws:
         try:
             s = "" if val is None or pd.isna(val) else str(val)
         except (TypeError, ValueError):
             s = str(val)
+    canon = _canonical_decimal_str(s)
+    if canon is not None:
+        s = canon
     return s.lower() if ignore_case else s
 
 
@@ -311,6 +344,24 @@ def create_workbook_with_df(df: pd.DataFrame, sheet_name: str = "Kết Quả") -
     auto_col_width(ws)
     freeze_header(ws)
     return wb, ws
+
+
+def append_df_to_workbook(wb, df: pd.DataFrame, sheet_name: str = "Sheet2"):
+    """Thêm worksheet mới từ DataFrame vào workbook có sẵn."""
+    ws = wb.create_sheet(title=sheet_name)
+    if df is None or df.empty:
+        ws.append(["(Không có dòng nào)"])
+        style_header(ws)
+        auto_col_width(ws)
+        freeze_header(ws)
+        return ws
+    ws.append(list(df.columns))
+    style_header(ws)
+    for _, row in df.iterrows():
+        ws.append(list(row))
+    auto_col_width(ws)
+    freeze_header(ws)
+    return ws
 
 
 def save_workbook_to_bytes(wb) -> bytes:

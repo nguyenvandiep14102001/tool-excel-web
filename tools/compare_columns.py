@@ -4,6 +4,7 @@ tools/compare_columns.py
 Tool: 🔍 So Sánh Cột
 So sánh từng cặp cột giữa 2 sheet (ví dụ: A↔C, B↔D).
 Cặp #1 tìm dòng tương ứng trong Sheet2; tất cả cặp phải khớp → xanh.
+Sheet output thêm: dòng có KEY ở File2 nhưng không có ở File1.
 """
 
 import streamlit as st
@@ -14,7 +15,7 @@ from modules.excel_utils import (
     GREEN_FILL, RED_FILL, BLUE_FILL,
     STYLE_MATCH, STYLE_DIFF, STYLE_SHEET2,
     build_key_index,
-    save_workbook_to_bytes, create_workbook_with_df,
+    save_workbook_to_bytes, create_workbook_with_df, append_df_to_workbook,
 )
 from modules.ui_components import (
     show_data_preview, normalize_options,
@@ -22,7 +23,7 @@ from modules.ui_components import (
     excel_download_button, no_file_warning,
 )
 
-TOOL_VERSION = "2.4"
+TOOL_VERSION = "2.6"
 SESSION_KEY = "col_cmp_v2_result"
 
 
@@ -52,7 +53,10 @@ def render(df1: pd.DataFrame | None, df2: pd.DataFrame | None,
 
     show_data_preview(df1, df2, name1, name2)
     st.markdown("### ⚙️ Cấu hình so sánh cột")
-    st.caption(f"Logic phiên bản **{TOOL_VERSION}** — cặp #1 tra cứu dòng Sheet2, tất cả cặp phải khớp.")
+    st.caption(
+        f"Logic phiên bản **{TOOL_VERSION}** — cặp #1 tra cứu dòng Sheet2, "
+        "tất cả cặp phải khớp. Output thêm sheet dòng chỉ có ở File2."
+    )
 
     strip, icase = normalize_options("col_cmp")
 
@@ -109,6 +113,22 @@ def render(df1: pd.DataFrame | None, df2: pd.DataFrame | None,
 
 
 # ── Core logic ────────────────────────────────────────────────────────────────
+
+def _only_in_file2(df1, df2, key_col_a, key_col_b, strip, icase) -> pd.DataFrame:
+    """Các dòng File2 có KEY không xuất hiện trong File1."""
+    key_width = digit_key_width(df1[key_col_a], df2[key_col_b])
+    keys_f1 = {
+        normalize_key(v, strip, icase, key_width)
+        for v in df1[key_col_a]
+    }
+    mask = [
+        normalize_key(v, strip, icase, key_width) not in keys_f1
+        for v in df2[key_col_b]
+    ]
+    out = df2.loc[mask].copy().reset_index(drop=True)
+    out.insert(0, "_NOTE", "Có trong File2 — không có KEY tương ứng ở File1")
+    return out
+
 
 def _compute(df1, df2, key_col_a, key_col_b, pairs, strip, icase) -> dict:
     key_width = digit_key_width(df1[key_col_a], df2[key_col_b])
@@ -178,29 +198,35 @@ def _compute(df1, df2, key_col_a, key_col_b, pairs, strip, icase) -> dict:
     )
     result_df["_NOTE"] = notes
 
+    only_f2 = _only_in_file2(df1, df2, key_col_a, key_col_b, strip, icase)
+
     return {
         "version": TOOL_VERSION,
         "key": (key_col_a, key_col_b),
         "pairs": pairs,
         "result_df": result_df,
+        "only_file2_df": only_f2,
         "col_matches": col_matches,
         "compare_cols": compare_cols,
         "n_rows": n_rows,
         "n_match": int(match_flags_s.sum()),
         "n_nomatch": len(match_flags_s) - int(match_flags_s.sum()),
+        "n_only_file2": len(only_f2),
     }
 
 
 def _display(data: dict) -> None:
     result_df = data["result_df"]
+    only_file2_df = data["only_file2_df"]
     col_matches = data["col_matches"]
     compare_cols = data["compare_cols"]
     n_rows = data["n_rows"]
 
     show_stats([
-        {"num": str(n_rows),              "lbl": "Tổng dòng",       "color": None},
-        {"num": str(data["n_match"]),     "lbl": "Dòng khớp",       "color": "#4dbb77"},
-        {"num": str(data["n_nomatch"]),   "lbl": "Dòng không khớp", "color": "#ff6b6b"},
+        {"num": str(n_rows),                "lbl": "Tổng dòng File1",  "color": None},
+        {"num": str(data["n_match"]),       "lbl": "Dòng khớp",        "color": "#4dbb77"},
+        {"num": str(data["n_nomatch"]),     "lbl": "Dòng không khớp",  "color": "#ff6b6b"},
+        {"num": str(data["n_only_file2"]),  "lbl": "Chỉ có File2",     "color": "#7eb8f7"},
     ])
 
     display_cols = list(result_df.columns)
@@ -226,6 +252,7 @@ def _display(data: dict) -> None:
                 styles.append("")
         return styles
 
+    st.markdown("#### Kết quả theo File1 (gốc)")
     try:
         st.dataframe(
             preview.style.apply(_highlight, axis=1),
@@ -237,6 +264,20 @@ def _display(data: dict) -> None:
 
     if n_rows > preview_n:
         st.caption(f"Đang xem {preview_n}/{n_rows} dòng đầu. Tải Excel để xem toàn bộ.")
+
+    st.markdown("#### Dòng chỉ có ở File2 (không có KEY ở File1)")
+    if only_file2_df.empty:
+        st.success("Không có dòng nào chỉ xuất hiện ở File2.")
+    else:
+        st.dataframe(
+            only_file2_df.head(200),
+            use_container_width=True,
+            height=280,
+        )
+        if len(only_file2_df) > 200:
+            st.caption(
+                f"Đang xem 200/{len(only_file2_df)} dòng đầu. Tải Excel để xem toàn bộ."
+            )
 
     with st.spinner("Đang tạo file Excel..."):
         wb, ws = create_workbook_with_df(export_df, "Kết Quả So Sánh Cột")
@@ -255,6 +296,8 @@ def _display(data: dict) -> None:
                     cell.fill = BLUE_FILL
                 else:
                     cell.fill = row_fill
+
+        append_df_to_workbook(wb, only_file2_df, "Chỉ có File2")
 
     excel_download_button(
         save_workbook_to_bytes(wb),
