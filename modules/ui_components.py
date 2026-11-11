@@ -124,3 +124,48 @@ def no_file_warning() -> None:
 def tool_header(title: str, subtitle: str) -> None:
     from assets.templates import app_header
     st.markdown(app_header(title, subtitle), unsafe_allow_html=True)
+
+
+def _build_guide_dialog():
+    if not hasattr(st, "dialog"):
+        return None
+    try:
+        decorator = st.dialog("📖 Hướng dẫn sử dụng", width="large")
+    except TypeError:
+        decorator = st.dialog("📖 Hướng dẫn sử dụng")
+
+    @decorator
+    def _dialog(tool_name: str, body: str) -> None:
+        st.markdown(f"### {tool_name}")
+        st.markdown(body)
+        st.caption("Đóng cửa sổ này (✕) để quay lại làm việc.")
+
+    return _dialog
+
+
+_TOOL_GUIDE_DIALOG = _build_guide_dialog()
+
+
+def render_tool_header_with_guide(title: str, subtitle: str) -> None:
+    """Banner màu + nút Hướng dẫn nằm trong cùng một ô gradient."""
+    from assets.templates import app_header
+    from assets.tool_guides import get_tool_guide
+
+    left, right = st.columns([5.5, 1.05], gap="small")
+    with left:
+        st.markdown(app_header(title, subtitle), unsafe_allow_html=True)
+    with right:
+        st.markdown("<div class='help-btn-wrap'></div>", unsafe_allow_html=True)
+        if st.button(
+            "❓ Hướng dẫn",
+            key="btn_tool_guide",
+            use_container_width=True,
+            type="primary",
+            help="Xem hướng dẫn sử dụng công cụ này",
+        ):
+            body = get_tool_guide(title)
+            if _TOOL_GUIDE_DIALOG is not None:
+                _TOOL_GUIDE_DIALOG(title, body)
+            else:
+                with st.expander(f"📖 Hướng dẫn — {title}", expanded=True):
+                    st.markdown(body)

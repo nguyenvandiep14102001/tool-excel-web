@@ -36,11 +36,10 @@ st.set_page_config(
 )
 
 # ── Internal imports ──────────────────────────────────────────────────────────
-from modules.ui_components import load_css
+from modules.ui_components import load_css, render_tool_header_with_guide
 from modules.file_loader   import render_file_loader
 from assets.templates      import (
     sidebar_logo, sidebar_footer, sidebar_divider,
-    app_header,
 )
 
 # ── Tool modules ──────────────────────────────────────────────────────────────
@@ -173,13 +172,10 @@ with st.sidebar:
     st.markdown(sidebar_footer(), unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════
-# HEADER
+# HEADER + nút Hướng dẫn (popup)
 # ═══════════════════════════════════════════════════════════
 tool_cfg = TOOLS[tool_name]
-st.markdown(
-    app_header(tool_name, tool_cfg["subtitle"]),
-    unsafe_allow_html=True,
-)
+render_tool_header_with_guide(tool_name, tool_cfg["subtitle"])
 
 # ═══════════════════════════════════════════════════════════
 # FILE UPLOAD  (shared, always visible)
